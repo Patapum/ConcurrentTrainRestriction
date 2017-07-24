@@ -18,12 +18,14 @@ function UpdateTrainPaths()
 
     for _, force in pairs(game.forces) do
         for _, train in pairs(force.get_trains()) do
-            local entity = train.path_end_stop
-            if entity then
-                local station = GetOrCreateStation(stations, entity)
-                table.insert(station.trains, train)
-            else
-                table.insert(stuckTrains, train)
+            if train.manual_mode == false then
+                local entity = train.path_end_stop
+                if entity then
+                    local station = GetOrCreateStation(stations, entity)
+                    table.insert(station.trains, train)
+                else
+                    table.insert(stuckTrains, train)
+                end
             end
         end
     end
@@ -52,6 +54,16 @@ function UpdateTrainPaths()
 end
 
 function SetTrainState(train, enable)
+    local schedule = train.schedule
+    if schedule then
+        if enable == false then
+            if #schedule.records > 1 then
+                schedule.current = schedule.current + 1
+            end
+            local current = (schedule.current > #schedule.records) and 1 or schedule.current
+            train.schedule = {current = current, records = schedule.records}
+        end
+    end
 end
 
 function RecalculatePath(train, stations)
