@@ -89,6 +89,9 @@ function RemoveCurrentFromSchedule(train)
 end
 
 function RemoveTemporaryFromSchedule(train, removeCurrent)
+    if train.schedule == nil then
+        return
+    end
     local records = train.schedule.records
     local current = train.schedule.current
     for index = #records, 1, -1 do
