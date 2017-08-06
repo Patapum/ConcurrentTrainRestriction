@@ -73,19 +73,19 @@ function AddTemporaryToSchedule(train, name)
     local current = train.schedule.current
     table.insert(
         records,
-        current,
+        current + 1,
         {
             station = name,
             wait_conditions = records[current].wait_conditions
         }
     )
-    train.schedule = {records = records, current = current}
+    train.schedule = {records = records, current = current + 1}
 end
 
 function RemoveCurrentFromSchedule(train)
     local records = train.schedule.records
     table.remove(records, train.schedule.current)
-    train.schedule = {records = records, current = train.schedule.current}
+    train.schedule = {records = records, current = train.schedule.current - 1}
 end
 
 function RemoveTemporaryFromSchedule(train, removeCurrent)
@@ -97,10 +97,10 @@ function RemoveTemporaryFromSchedule(train, removeCurrent)
     for index = #records, 1, -1 do
         if
             (removeCurrent or index ~= current) and
-                records[index].station:find("⇣") ~= nil
+                records[index].station:find("⇡") ~= nil
          then
             table.remove(records, index)
-            if current > index then
+            if current >= index then
                 current = current - 1
             end
         end
@@ -147,7 +147,7 @@ function CheckOverload(station)
                 direction = station.entity.direction,
                 force = station.entity.force
             }
-            temporaryEntity.backer_name = "⇣" .. station.entity.unit_number
+            temporaryEntity.backer_name = "⇡" .. station.entity.unit_number
             local temporary = {
                 actualEntityUnitNumber = station.entity.unit_number,
                 actualEntity = station.entity,
