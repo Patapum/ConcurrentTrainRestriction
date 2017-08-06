@@ -56,7 +56,9 @@ function UpdateTrainPaths()
             if #trainsToTemporary > station.maxTrains then
                 for index = station.maxTrains + 1, #trainsToTemporary do
                     train = trainsToTemporary[index]
-                    RemoveCurrentFromSchedule(train)
+                    if train.station == nil then
+                        RemoveCurrentFromSchedule(train)
+                    end
                 end
             elseif #trainsToTemporary < station.maxTrains then
                 for index = 1, station.maxTrains - #trainsToTemporary do
