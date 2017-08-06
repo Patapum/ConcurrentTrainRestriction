@@ -170,6 +170,15 @@ function CheckOverload(station)
             temporary.temporaryEntity.destroy()
         else
             station.temporaryEntity = temporary.temporaryEntity
+            for w = 2, 3 do
+                temporary.temporaryEntity.connect_neighbour({wire = w, target_entity = station.entity})
+            end
+            local behavior = station.entity.get_control_behavior()
+            local temporaryBehavior = temporary.temporaryEntity.get_or_create_control_behavior()
+            temporaryBehavior.send_to_train = behavior.send_to_train
+            temporaryBehavior.read_from_train = behavior.read_from_train
+            temporaryBehavior.read_stopped_train = behavior.read_stopped_train
+            temporaryBehavior.stopped_train_signal = behavior.stopped_train_signal
         end
     end
 
