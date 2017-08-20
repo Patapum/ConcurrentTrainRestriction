@@ -13,6 +13,7 @@ temporaryStop.top_animations = nil
 local temporaryStopControl = table.deepcopy(data.raw["item"]["train-stop"])
 temporaryStopControl.name = "ctr-temporary-stop"
 temporaryStopControl.place_result = "ctr-temporary-stop"
+temporaryStopControl.flags = {"hidden"}
 
 data:extend {
     temporaryStop,
