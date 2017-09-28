@@ -229,20 +229,25 @@ function GetMaxTrains(entity)
             behavior.circuit_condition.condition.first_signal.name == "locomotive" and
             behavior.circuit_condition.condition.second_signal == nil
      then
-        maxTrains = 0
-        for w = 2, 3 do
-            local network = entity.get_circuit_network(w)
-            if network then
-                local signal =
-                    network.get_signal({["name"] = "locomotive", ["type"] = "item"})
-                if signal and signal ~= 0 then
-                    maxTrains = maxTrains + signal
-                end
-            end
-        end
         local temporary = global.actualStations[entity.unit_number]
-        if temporary ~= nil and temporary.temporaryCombinator ~= nil then
-            maxTrains = maxTrains - temporary.temporaryCombinator.get_control_behavior().get_signal(1).count
+        for _, definition in pairs(entity.circuit_connection_definitions) do
+            if temporary == nil or definition.target_entity.unit_number ~= temporary.temporaryCombinator.unit_number then
+                maxTrains = 0
+                for w = 2, 3 do
+                    local network = entity.get_circuit_network(w)
+                    if network then
+                        local signal =
+                            network.get_signal({["name"] = "locomotive", ["type"] = "item"})
+                        if signal and signal ~= 0 then
+                            maxTrains = maxTrains + signal
+                        end
+                    end
+                end
+                if temporary ~= nil and temporary.temporaryCombinator ~= nil then
+                    maxTrains = maxTrains - temporary.temporaryCombinator.get_control_behavior().get_signal(1).count
+                end
+                break
+            end
         end
     end
     return maxTrains
