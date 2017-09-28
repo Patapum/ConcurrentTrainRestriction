@@ -11,6 +11,28 @@ script.on_load(
     end
 )
 
+script.on_configuration_changed(
+    function()
+        Migrations()
+    end
+)
+
+function Migrations()
+    if global.version == nil then
+        local temporaryStations = global.temporaryStations or {}
+        for _, temporary in pairs(temporaryStations) do
+            if temporary.actualEntity.valid then
+                local circuit_condition = temporary.actualEntity.get_control_behavior().circuit_condition
+                circuit_condition.condition.constant = 0
+                temporary.actualEntity.get_control_behavior().circuit_condition = circuit_condition
+            end
+        end
+        global.temporaryStations = {}
+        global.actualStations = {}
+    end
+    global.version = "0.2.0"
+end
+
 function UpdateTrainPaths()
     global.temporaryStations = global.temporaryStations or {}
     global.actualStations = global.actualStations or {}
@@ -55,14 +77,14 @@ function UpdateTrainPaths()
             end
             if #trainsToTemporary > station.maxTrains then
                 for index = station.maxTrains + 1, #trainsToTemporary do
-                    train = trainsToTemporary[index]
+                    local train = trainsToTemporary[index]
                     if train.station == nil then
                         RemoveCurrentFromSchedule(train)
                     end
                 end
             elseif #trainsToTemporary < station.maxTrains then
                 for index = 1, station.maxTrains - #trainsToTemporary do
-                    train = trainsToActual[index]
+                    local train = trainsToActual[index]
                     AddTemporaryToSchedule(train, station.temporaryEntity.backer_name)
                 end
             end
@@ -125,6 +147,7 @@ function GetOrCreateStation(stations, entity)
         station = {
             entity = entity,
             temporaryEntity = nil,
+            temporaryConstant = nil,
             maxTrains = GetMaxTrains(entity),
             trains = {},
             name = entity.backer_name
@@ -144,24 +167,29 @@ function CheckOverload(station)
          then
             local temporaryEntity =
                 station.entity.surface.create_entity {
-                name = "ctr-temporary-stop",
-                position = station.entity.position,
-                direction = station.entity.direction,
-                force = station.entity.force
-            }
+                    name = "ConcurrentTrainRestriction-invisible-train-stop",
+                    position = station.entity.position,
+                    direction = station.entity.direction,
+                    force = station.entity.force
+                }
+            local temporaryCombinator =
+                station.entity.surface.create_entity {
+                    name = "ConcurrentTrainRestriction-invisible-constant-combinator",
+                    position = station.entity.position,
+                    direction = station.entity.direction,
+                    force = station.entity.force
+                }
             temporaryEntity.backer_name = "⇡" .. station.entity.unit_number
             local temporary = {
                 actualEntityUnitNumber = station.entity.unit_number,
                 actualEntity = station.entity,
-                temporaryEntity = temporaryEntity
+                temporaryEntity = temporaryEntity,
+                temporaryCombinator = temporaryCombinator
             }
             global.actualStations[station.entity.unit_number] = temporary
             global.temporaryStations[temporaryEntity.unit_number] = temporary
         end
 
-        local circuit_condition = station.entity.get_control_behavior().circuit_condition
-        circuit_condition.condition.constant = #station.trains
-        station.entity.get_control_behavior().circuit_condition = circuit_condition
     end
 
     local temporary = global.actualStations[station.entity.unit_number]
@@ -170,11 +198,15 @@ function CheckOverload(station)
             global.temporaryStations[temporary.temporaryEntity.unit_number] = nil
             global.actualStations[temporary.actualEntityUnitNumber] = nil
             temporary.temporaryEntity.destroy()
+            temporary.temporaryCombinator.destroy()
         else
             station.temporaryEntity = temporary.temporaryEntity
             for w = 2, 3 do
                 temporary.temporaryEntity.connect_neighbour({wire = w, target_entity = station.entity})
+                temporary.temporaryEntity.connect_neighbour({wire = w, target_entity = station.entity})
             end
+            temporary.temporaryEntity.connect_neighbour({wire = 2, target_entity = temporary.temporaryCombinator})
+            temporary.temporaryCombinator.get_control_behavior().set_signal(1, {signal = {["name"] = "locomotive", ["type"] = "item"}, count = -#station.trains})
             local behavior = station.entity.get_control_behavior()
             local temporaryBehavior = temporary.temporaryEntity.get_or_create_control_behavior()
             temporaryBehavior.send_to_train = behavior.send_to_train
@@ -207,6 +239,10 @@ function GetMaxTrains(entity)
                     maxTrains = maxTrains + signal
                 end
             end
+        end
+        local temporary = global.actualStations[entity.unit_number]
+        if temporary ~= nil and temporary.temporaryCombinator ~= nil then
+            maxTrains = maxTrains - temporary.temporaryCombinator.get_control_behavior().get_signal(1).count
         end
     end
     return maxTrains
