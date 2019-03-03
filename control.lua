@@ -4,7 +4,7 @@ script.on_load(
             {defines.events.on_tick},
             function(e)
                 if e.tick % 10 == 0 then
-                    UpdateTrainPaths()
+                     UpdateTrainPaths()
                 end
             end
         )
@@ -119,18 +119,22 @@ function RemoveTemporaryFromSchedule(train, removeCurrent)
     end
     local records = train.schedule.records
     local current = train.schedule.current
+    local updated = false
     for index = #records, 1, -1 do
         if
             (removeCurrent or index ~= current) and
                 records[index].station:find("⇡") ~= nil
          then
+            updated = true
             table.remove(records, index)
             if current >= index then
                 current = current - 1
             end
         end
     end
-    train.schedule = {records = records, current = current}
+    if updated then
+        train.schedule = {records = records, current = current}
+    end
 end
 
 function GetOrCreateStation(stations, entity)
