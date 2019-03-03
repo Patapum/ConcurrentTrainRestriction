@@ -45,6 +45,7 @@ function UpdateTrainPaths()
             global.temporaryStations[_] = nil
             global.actualStations[temporary.actualEntityUnitNumber] = nil
             temporary.temporaryEntity.destroy()
+            temporary.temporaryCombinator.destroy()
         end
     end
 
