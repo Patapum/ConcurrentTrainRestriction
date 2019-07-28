@@ -217,7 +217,9 @@ function CheckOverload(station)
             temporaryBehavior.send_to_train = behavior.send_to_train
             temporaryBehavior.read_from_train = behavior.read_from_train
             temporaryBehavior.read_stopped_train = behavior.read_stopped_train
-            temporaryBehavior.stopped_train_signal = behavior.stopped_train_signal
+            if behavior.read_stopped_train and behavior.stopped_train_signal ~= nil then
+                temporaryBehavior.stopped_train_signal = behavior.stopped_train_signal
+            end
         end
     end
 
