@@ -256,6 +256,7 @@ function GetMaxTrains(entity)
                 if temporary ~= nil and temporary.temporaryCombinator ~= nil then
                     maxTrains = maxTrains - temporary.temporaryCombinator.get_control_behavior().get_signal(1).count
                 end
+                maxTrains = math.max(maxTrains, 0)
                 break
             end
         end
