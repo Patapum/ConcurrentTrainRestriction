@@ -80,7 +80,7 @@ function UpdateTrainPaths()
                 for index = station.maxTrains + 1, #trainsToTemporary do
                     local train = trainsToTemporary[index]
                     if train.station == nil then
-                        RemoveCurrentFromSchedule(train)
+                        RemoveTemporaryFromSchedule(train, true)
                     end
                 end
             elseif #trainsToTemporary < station.maxTrains then
@@ -105,12 +105,6 @@ function AddTemporaryToSchedule(train, name)
         }
     )
     train.schedule = {records = records, current = current + 1}
-end
-
-function RemoveCurrentFromSchedule(train)
-    local records = train.schedule.records
-    table.remove(records, train.schedule.current)
-    train.schedule = {records = records, current = train.schedule.current - 1}
 end
 
 function RemoveTemporaryFromSchedule(train, removeCurrent)
