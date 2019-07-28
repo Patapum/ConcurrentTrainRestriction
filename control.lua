@@ -238,7 +238,10 @@ function GetMaxTrains(entity)
      then
         local temporary = global.actualStations[entity.unit_number]
         for _, definition in pairs(entity.circuit_connection_definitions) do
-            if temporary == nil or definition.target_entity.unit_number ~= temporary.temporaryCombinator.unit_number then
+            if temporary == nil or 
+                (definition.target_entity.unit_number ~= temporary.temporaryCombinator.unit_number and
+                definition.target_entity.unit_number ~= temporary.temporaryEntity.unit_number)
+             then
                 maxTrains = 0
                 for w = 2, 3 do
                     local network = entity.get_circuit_network(w)
