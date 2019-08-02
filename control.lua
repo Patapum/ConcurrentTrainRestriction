@@ -1,13 +1,9 @@
-script.on_load(
-    function()
-        script.on_event(
-            {defines.events.on_tick},
-            function(e)
-                if e.tick % 10 == 0 then
-                     UpdateTrainPaths()
-                end
-            end
-        )
+script.on_event(
+    {defines.events.on_tick},
+    function(e)
+        if e.tick % 10 == 0 then
+                UpdateTrainPaths()
+        end
     end
 )
 
