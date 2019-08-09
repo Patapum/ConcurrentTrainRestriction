@@ -113,6 +113,7 @@ function RemoveTemporaryFromSchedule(train, removeCurrent)
     for index = #records, 1, -1 do
         if
             (removeCurrent or index ~= current) and
+                records[index].station ~= nil and
                 records[index].station:find("⇡") ~= nil
          then
             updated = true
