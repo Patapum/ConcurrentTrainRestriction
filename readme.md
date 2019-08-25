@@ -46,7 +46,7 @@ On ![red-wire](https://wiki.factorio.com/images/Red_wire.png) station will outpu
 
 ## Improvements to consider
 
-- Read train content and feed it back to combinators for mor precise calculation
+- Read train content and feed it back to combinators for more precise calculation
 - Keep maximum allowed trains correspond to station stacker size (around two more combinators)
 
 # Mod cons
