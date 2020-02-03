@@ -1,11 +1,11 @@
 {
   "name": "ConcurrentTrainRestriction",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "title": "Concurrent Train Restriction",
   "author": "Metacreamy",
   "contact": "",
   "homepage": "https://github.com/Patapum/ConcurrentTrainRestriction",
-  "factorio_version": "0.17",
+  "factorio_version": "0.18",
   "dependencies": ["base"],
   "description": "Restrict amount of trains trying to reach station simultaneously by circuit network.\n\nHow to use:\n- Connect train station to circuit network\n- Set station behavior to Enable on condition [item=locomotive] > 0\n- Pass desired trains amount in [item=locomotive] signal to station\n\n On [item=red-wire] station will output negated amount of trains heading here"
 }
