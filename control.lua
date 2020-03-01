@@ -110,6 +110,7 @@ function RemoveTemporaryFromSchedule(train, removeCurrent)
     local records = train.schedule.records
     local current = train.schedule.current
     local updated = false
+    local wait_conditions = nil
     for index = #records, 1, -1 do
         if
             (removeCurrent or index ~= current) and
@@ -117,6 +118,7 @@ function RemoveTemporaryFromSchedule(train, removeCurrent)
                 records[index].station:find("⇡") ~= nil
          then
             updated = true
+            wait_conditions = records[index].wait_conditions
             table.remove(records, index)
             if current >= index then
                 current = current - 1
@@ -124,7 +126,15 @@ function RemoveTemporaryFromSchedule(train, removeCurrent)
         end
     end
     if updated then
-        train.schedule = {records = records, current = current}
+        if current > 0 then
+            train.schedule = {records = records, current = current}
+        elseif train.has_path then
+            current = 1
+            records[current] = {rail = train.path_end_rail, wait_conditions = wait_conditions, temporary = true }
+            train.schedule = {records = records, current = current}
+        else
+            train.schedule = nil
+        end
     end
 end
 
