@@ -1,7 +1,68 @@
+local Enabled = settings.global["ConcurrentTrainRestriction-Enabled"].value
+local HideMigration = settings.global["ConcurrentTrainRestriction-HideMigration"].value
+
+script.on_event(
+    defines.events.on_runtime_mod_setting_changed,
+    function(event)
+        Enabled = settings.global["ConcurrentTrainRestriction-Enabled"].value
+        HideMigration = settings.global["ConcurrentTrainRestriction-HideMigration"].value
+        UpdateGui()
+    end
+)
+
+function UpdateGui()
+    for _, player in pairs(game.players) do
+        local gui = player.gui.top.ConcurrentTrainRestriction
+        if HideMigration then
+            if gui ~= nil then
+                gui.destroy()
+            end
+        else
+            if gui == nil then
+                gui = player.gui.top.add{type="frame", name="ConcurrentTrainRestriction", caption="Concurrent Train Restriction"}
+                gui.add{type="button", name="ConcurrentTrainRestrictionMigrate", caption="Migrate"}
+                gui.add{type="button", name="ConcurrentTrainRestrictionHide", caption="Hide"}
+            end
+        end
+    end
+end
+
+script.on_event(
+    defines.events.on_gui_click,
+    function(event)
+        if event.element.name == "ConcurrentTrainRestrictionMigrate" then
+            for _, surface in pairs(game.surfaces) do
+                for _, entity in pairs(surface.find_entities_filtered{type="train-stop"}) do
+                    local behavior = entity.get_control_behavior()
+                    if
+                        behavior and behavior.enable_disable and
+                            behavior.circuit_condition.condition.comparator == ">" and
+                            behavior.circuit_condition.condition.first_signal and
+                            behavior.circuit_condition.condition.first_signal.name == "locomotive" and
+                            behavior.circuit_condition.condition.second_signal == nil
+                    then
+                        behavior.set_trains_limit = true
+                        behavior.trains_limit_signal = {["name"] = "locomotive", ["type"] = "item"}
+                    end
+                end
+            end
+            for _, force in pairs(game.forces) do
+                for _, train in pairs(force.get_trains()) do
+                    RemoveTemporaryFromSchedule(train, true)
+                end
+            end
+            settings.global["ConcurrentTrainRestriction-Enabled"] = {value = false}
+            settings.global["ConcurrentTrainRestriction-HideMigration"] = {value = true}
+        elseif event.element.name == "ConcurrentTrainRestrictionHide" then
+            settings.global["ConcurrentTrainRestriction-HideMigration"] = {value = true}
+        end
+    end
+)
+
 script.on_event(
     {defines.events.on_tick},
     function(e)
-        if e.tick % 10 == 0 then
+        if Enabled and e.tick % 10 == 0 then
                 UpdateTrainPaths()
         end
     end
@@ -10,6 +71,7 @@ script.on_event(
 script.on_configuration_changed(
     function()
         Migrations()
+        UpdateGui()
     end
 )
 
