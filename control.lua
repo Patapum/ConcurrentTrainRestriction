@@ -7,6 +7,9 @@ script.on_event(
         Enabled = settings.global["ConcurrentTrainRestriction-Enabled"].value
         HideMigration = settings.global["ConcurrentTrainRestriction-HideMigration"].value
         UpdateGui()
+        if Enabled == false then
+            Disable()
+        end
     end
 )
 
@@ -23,6 +26,24 @@ function UpdateGui()
                 gui.add{type="button", name="ConcurrentTrainRestrictionMigrate", caption="Migrate"}
                 gui.add{type="button", name="ConcurrentTrainRestrictionHide", caption="Hide"}
             end
+        end
+    end
+end
+
+function Disable()
+    global.temporaryStations = nil
+    global.actualStations = nil
+    for _, surface in pairs(game.surfaces) do
+        for _, entity in pairs(surface.find_entities_filtered{name="ConcurrentTrainRestriction-invisible-train-stop"}) do
+            entity.destroy()
+        end
+        for _, entity in pairs(surface.find_entities_filtered{name="ConcurrentTrainRestriction-invisible-constant-combinator"}) do
+            entity.destroy()
+        end
+    end
+    for _, force in pairs(game.forces) do
+        for _, train in pairs(force.get_trains()) do
+            RemoveTemporaryFromSchedule(train, true)
         end
     end
 end
@@ -44,11 +65,6 @@ script.on_event(
                         behavior.set_trains_limit = true
                         behavior.trains_limit_signal = {["name"] = "locomotive", ["type"] = "item"}
                     end
-                end
-            end
-            for _, force in pairs(game.forces) do
-                for _, train in pairs(force.get_trains()) do
-                    RemoveTemporaryFromSchedule(train, true)
                 end
             end
             settings.global["ConcurrentTrainRestriction-Enabled"] = {value = false}
